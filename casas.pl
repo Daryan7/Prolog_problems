@@ -1,0 +1,32 @@
+vecino(X,Y):-Y is X+1.
+vecino(X,Y):-Y is X-1.
+casas:-	
+    Sol = [	[1,_,_,_,_,_],
+          	[2,_,_,_,_,_],
+          	[3,_,_,_,_,_],
+          	[4,_,_,_,_,_],
+          	[5,_,_,_,_,_] ],
+    
+    member([_,rojo,_,_,_,peru] ,Sol),
+    member([_,_,_,perro,_,francia], Sol),
+    member([_,_,pintor,_,_,japon], Sol),
+    member([_,_,_,_,ron,china], Sol),
+    member([1,_,_,_,_,hungaria], Sol),
+    member([_,verde,_,_,coñac,_], Sol),
+    member([X1,verde,_,_,_,_], Sol),
+    Y1 is X1+1,
+    member([Y1,blanco,_,_,_,_], Sol),
+    member([_,_,escultor,caracol,_,_], Sol),
+    member([_,amarillo,actor,_,_,_], Sol),
+    member([3,_,_,_,cava,_], Sol),
+    member([X2,_,actor,_,_,_], Sol),
+    vecino(X2,Y2),
+    member([Y2,_,_,caballo,_,_], Sol),
+    member([X3,_,_,_,_,hungaria], Sol),
+    vecino(X3,Y3),
+    member([Y3,azul,_,_,_,_], Sol),
+    member([_,_,notario,_,whisky,_], Sol),
+    member([X4,_,medico,_,_,_], Sol),
+    vecino(X4,Y4),
+    member([Y4,_,_,ardilla,_,_], Sol),
+	write(Sol), nl,!.
