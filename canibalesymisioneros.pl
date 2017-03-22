@@ -4,6 +4,8 @@
 % se los comerán. Escribe un programa Prolog que halle la estrategia para que todos
 % lleguen sanos y salvos a la otra orilla.
 
+problema(MISIONEROS,CANIBALES):-solucion(MISIONEROS,CANIBALES,0,0,0,[[MISIONEROS,CANIBALES,0,0,0]]).
+
 solucion(0,0,MO2,CO2,_,_):-nocomen(MO2,CO2).
 solucion(MO1,CO1,MO2,CO2,O,L):-
     nocomen(MO1,CO1),nocomen(MO2,CO2),
