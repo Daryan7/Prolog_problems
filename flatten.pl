@@ -1,9 +1,6 @@
-concat([], L, L).
-concat([X|L1], L2, [X|L3]) :-concat(L1, L2, L3).
-
 flatten([],[]):-!.
 flatten(X, [X]):-X\=[_|_].
-flatten([X|L1], L):-flatten(X, LX), flatten(L1,L2), concat(LX,L2,L).
+flatten([X|L1], L):-flatten(X, LX), flatten(L1,L2), append(LX,L2,L).
 
 
 union([],L,L).
