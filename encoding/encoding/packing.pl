@@ -1,4 +1,4 @@
-:-include(entradaPacking5).
+:-include(miEntrada).
 :-dynamic(varNumber/3).
 symbolicOutput(0). % set to 1 to see symbolic output only; 0 otherwise.
 
@@ -48,16 +48,41 @@ placeAll:-
     atLeast(1,Lits), fail.
 placeAll.
 
-fillAll:-
-    rect(B, SX, SY), height(H), width(W),
-    LW is W-SX+1, LH is H-SY+1,
-    between(1,LW,X), between(1,LH,Y),
+ocupa(B,X,Y,I,J):-
+    rect(B,SX,SY),
     LX is X+SX-1, LY is Y+SY-1,
-    between(X,LX,PX), between(Y,LY,PY),
-    negate(starts-B-X-Y, NEG),
-    writeClause([NEG,fill-B-PX-PY]),fail.
+    between(X,LX,I), between(Y,LY,J).
+    
+possiblePlacements(B,I,J):-
+    rect(B,SX,SY),
+    height(H), width(W),
+    LW is W-SX+1, LH is H-SY+1,
+    between(1,LW,I), between(1,LH,J).
+
+fillAll:-
+    rect(B),
+    possiblePlacements(B,X,Y),
+    ocupa(B,X,Y,I,J),
+    negate(starts-B-X-Y, NEGS),
+    writeClause([NEGS,fill-B-I-J]),fail.
+fillAll:-
+    rect(B),
+    possiblePlacements(B,X,Y),
+    insideTable(I,J),
+    \+ocupa(B,X,Y,I,J),
+    negate(starts-B-X-Y, NEGS),
+    negate(fill-B-I-J, NEGF),
+    %write([NEGS,NEGF]),nl,
+    writeClause([NEGS,NEGF]),fail.
 fillAll.
 
+nofill(X,Y,B,SX,SY):-
+    LX is X+SX-1, LY is Y+SY-1,
+    xCoord(PX), \+between(X,LX,PX),
+    yCoord(PY), \+between(Y,LY,PY),
+    negate(fill-B-PX-PY, NEGF),
+    writeClause([starts-B-X-Y,NEGF]),fail.
+nofill(_,_,_,_,_).
 
 noRepetitions:- xCoord(X), yCoord(Y), findall(fill-B-X-Y, rect(B), Lits), atMost(1, Lits), fail.
 noRepetitions.
@@ -67,11 +92,14 @@ noRepetitions.
 
 displaySol(M):-
     yCoord(Y), xCoord(X),
-    member(fill-B-X-Y, M),
-    write(B), write(' '),
+    displayPartialSol(X,Y,M),
     width(X), nl, fail.
 displaySol(_).
 
+displayPartialSol(X,Y,M):-
+    member(fill-B-X-Y, M),
+    write(B), write(' '),!.
+displayPartialSol(_,_,_):-write('x ').
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
