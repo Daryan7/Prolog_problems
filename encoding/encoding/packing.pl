@@ -1,4 +1,4 @@
-:-include(miEntrada).
+:-include(entradaPacking5).
 :-dynamic(varNumber/3).
 symbolicOutput(0). % set to 1 to see symbolic output only; 0 otherwise.
 
@@ -35,54 +35,65 @@ insideTable(X,Y):- width(W), height(H), between(1,W,X), between(1,H,Y).
 % starts-B-X-Y:   box B has its left-bottom cell with upper-right coordinates (X,Y)
 %  fills-B-X-Y:   box B fills cell with upper-right coordinates (X,Y)
 
-writeClauses:-
-    placeAll,
-    noRepetitions,
-    fillAll,
-    true.
-
-placeAll:-
-    rect(B, LX, LY), height(H), width(W),
-    RW is W-LX+1, RH is H-LY+1,
-    findall(starts-B-X-Y, (between(1,RW,X), between(1,RH,Y)), Lits),
-    atLeast(1,Lits), fail.
-placeAll.
-
-ocupa(B,X,Y,I,J):-
-    rect(B,SX,SY),
-    LX is X+SX-1, LY is Y+SY-1,
-    between(X,LX,I), between(Y,LY,J).
-    
 possiblePlacements(B,I,J):-
     rect(B,SX,SY),
     height(H), width(W),
     LW is W-SX+1, LH is H-SY+1,
     between(1,LW,I), between(1,LH,J).
 
+writeClauses:-
+    placeAll,
+    noRepetitions,
+    fillAll,
+    true.
+    
+placeAll:-
+    rect(B, LX, LY), height(H), width(W),
+    RW is W-LX+1, RH is H-LY+1,
+    findall(starts-B-X-Y, (between(1,RW,X), between(1,RH,Y)), Lits),
+    atLeast(1,Lits), fail.
+placeAll.
+    
+fillWithStartPos(B,X,Y,I,J):-
+    rect(B,SX,SY),
+    LX is X+SX-1, LY is Y+SY-1,
+    I >= X, I =< LX,
+    J >= Y, J =< LY,
+    negate(starts-B-X-Y,NEG),
+    writeClause([NEG,fill-B-I-J]),!.
+fillWithStartPos(B,X,Y,I,J):-
+    negate(starts-B-X-Y,NEGS),
+    negate(fill-B-I-J,NEGF),
+    writeClause([NEGS,NEGF]).
+
+fillAllAlt:-
+    rect(B),
+    possiblePlacements(B,X,Y),
+    insideTable(I,J),
+    fillWithStartPos(B,X,Y,I,J),
+    fail.
+fillAllAlt.
+
+ocupa(B,X,Y,I,J):-
+    rect(B,SX,SY),
+    LX is X+SX-1, LY is Y+SY-1,
+    between(X,LX,I), between(Y,LY,J).
+    
 fillAll:-
     rect(B),
     possiblePlacements(B,X,Y),
     ocupa(B,X,Y,I,J),
     negate(starts-B-X-Y, NEGS),
     writeClause([NEGS,fill-B-I-J]),fail.
-fillAll:-
-    rect(B),
-    possiblePlacements(B,X,Y),
-    insideTable(I,J),
-    \+ocupa(B,X,Y,I,J),
-    negate(starts-B-X-Y, NEGS),
-    negate(fill-B-I-J, NEGF),
-    %write([NEGS,NEGF]),nl,
-    writeClause([NEGS,NEGF]),fail.
+%fillAll:-
+%     rect(B),
+%    possiblePlacements(B,X,Y),
+%    insideTable(I,J),
+%    \+ocupa(B,X,Y,I,J),
+%    negate(starts-B-X-Y, NEGS),
+%    negate(fill-B-I-J, NEGF),
+%    writeClause([NEGS,NEGF]),fail.
 fillAll.
-
-nofill(X,Y,B,SX,SY):-
-    LX is X+SX-1, LY is Y+SY-1,
-    xCoord(PX), \+between(X,LX,PX),
-    yCoord(PY), \+between(Y,LY,PY),
-    negate(fill-B-PX-PY, NEGF),
-    writeClause([starts-B-X-Y,NEGF]),fail.
-nofill(_,_,_,_,_).
 
 noRepetitions:- xCoord(X), yCoord(Y), findall(fill-B-X-Y, rect(B), Lits), atMost(1, Lits), fail.
 noRepetitions.

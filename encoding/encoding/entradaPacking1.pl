@@ -1,6 +1,6 @@
 % Width and height of the large piece of cloth
-width(3).
-height(5).
+width(10).
+height(10).
 
 % rect(pieceNum,pieceWidth,pieceHeight)
 rect(1,2,2).
