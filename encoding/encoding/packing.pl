@@ -1,4 +1,4 @@
-:-include(entradaPacking5).
+:-include(entradaPacking1).
 :-dynamic(varNumber/3).
 symbolicOutput(0). % set to 1 to see symbolic output only; 0 otherwise.
 
@@ -48,31 +48,10 @@ writeClauses:-
     true.
     
 placeAll:-
-    rect(B, LX, LY), height(H), width(W),
-    RW is W-LX+1, RH is H-LY+1,
-    findall(starts-B-X-Y, (between(1,RW,X), between(1,RH,Y)), Lits),
+    rect(B),
+    findall(starts-B-X-Y, possiblePlacements(B,X,Y), Lits),
     atLeast(1,Lits), fail.
 placeAll.
-    
-fillWithStartPos(B,X,Y,I,J):-
-    rect(B,SX,SY),
-    LX is X+SX-1, LY is Y+SY-1,
-    I >= X, I =< LX,
-    J >= Y, J =< LY,
-    negate(starts-B-X-Y,NEG),
-    writeClause([NEG,fill-B-I-J]),!.
-fillWithStartPos(B,X,Y,I,J):-
-    negate(starts-B-X-Y,NEGS),
-    negate(fill-B-I-J,NEGF),
-    writeClause([NEGS,NEGF]).
-
-fillAllAlt:-
-    rect(B),
-    possiblePlacements(B,X,Y),
-    insideTable(I,J),
-    fillWithStartPos(B,X,Y,I,J),
-    fail.
-fillAllAlt.
 
 ocupa(B,X,Y,I,J):-
     rect(B,SX,SY),
@@ -98,6 +77,30 @@ fillAll.
 noRepetitions:- xCoord(X), yCoord(Y), findall(fill-B-X-Y, rect(B), Lits), atMost(1, Lits), fail.
 noRepetitions.
 
+%%%%%%%%%%% Alternative implementation of fillAll %%%%%%%%%%
+%% It ensures there will be no fill variable set to true without its correspondent start
+%% It uses a lot more of clauses
+
+fillWithStartPos(B,X,Y,I,J):-
+    rect(B,SX,SY),
+    LX is X+SX-1, LY is Y+SY-1,
+    I >= X, I =< LX,
+    J >= Y, J =< LY,
+    negate(starts-B-X-Y,NEG),
+    writeClause([NEG,fill-B-I-J]),!.
+fillWithStartPos(B,X,Y,I,J):-
+    negate(starts-B-X-Y,NEGS),
+    negate(fill-B-I-J,NEGF),
+    writeClause([NEGS,NEGF]).
+
+fillAllAlt:-
+    rect(B),
+    possiblePlacements(B,X,Y),
+    insideTable(I,J),
+    fillWithStartPos(B,X,Y,I,J),
+    fail.
+fillAllAlt.
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%%% show the solution. Here M contains the literals that are true in the model:
 
@@ -109,8 +112,48 @@ displaySol(_).
 
 displayPartialSol(X,Y,M):-
     member(fill-B-X-Y, M),
-    write(B), write(' '),!.
-displayPartialSol(_,_,_):-write('x ').
+    displayNum(B),!.
+displayPartialSol(_,_,_):-write('  x').
+
+displayNum(N):- N < 10, !, write('  '), write(N).
+displayNum(N):- write(' '), write(N).
+
+%%%%%% Alternative implementation of displaySol %%%%%%
+%% This implementation ensures every rectangle will be shown only once, even though the sat solver returned the same rectangle more than
+%% once, or it set to true fill variables without its correspondent start.
+
+displaySolAlt(M):-
+    findall(R,rect(R),RECTS),
+    findall(B-X-Y, member(starts-B-X-Y,M),STARTS),
+    generateResultMatrix(RECTS,STARTS,MATRIX),
+    %write(MATRIX),nl,
+    displayMatrix(MATRIX).
+    
+displayMatrix(MATRIX):-
+    yCoord(Y), xCoord(X),
+    displayPartialMatrix(X,Y,MATRIX),
+    width(X),nl,fail.
+displayMatrix(_).
+
+displayPartialMatrix(X,Y,MATRIX):-
+    nth1(Y,MATRIX,ROW),
+    nth1(X,ROW,ELEM),
+    integer(ELEM),
+    displayNum(ELEM),!.
+displayPartialMatrix(_,_,_):-write('  x').
+
+fillRectInMatrix([],_).
+fillRectInMatrix([R-X-Y|L],MATRIX):-
+    nth1(Y,MATRIX,ROW),
+    nth1(X,ROW,R),
+    fillRectInMatrix(L,MATRIX).
+    
+generateResultMatrix([],_,_).
+generateResultMatrix([R|L],M,MATRIX):-
+    member(R-X-Y, M),
+    findall(R-I-J,ocupa(R,X,Y,I,J), COORDS),
+    fillRectInMatrix(COORDS,MATRIX),
+    generateResultMatrix(L,M,MATRIX).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -158,7 +201,7 @@ shell('picosat-965/picosat -v -o model infile.cnf', Result),  % if sat: Result=1
 	treatResult(Result),!.
 
 treatResult(20):- write('Unsatisfiable'), nl, halt.
-treatResult(10):- write('Solution found: '), nl, see(model), symbolicModel(M), seen, displaySol(M), nl,nl,halt.
+treatResult(10):- write('Solution found: '), nl, see(model), symbolicModel(M), seen, displaySolAlt(M), nl,nl,halt.
 
 initClauseGeneration:-  %initialize all info about variables and clauses:
 	retractall(numClauses(   _)),
