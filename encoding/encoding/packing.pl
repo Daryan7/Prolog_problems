@@ -1,4 +1,4 @@
-:-include(entradaPacking1).
+:-include(entradaPacking5).
 :-dynamic(varNumber/3).
 symbolicOutput(0). % set to 1 to see symbolic output only; 0 otherwise.
 
