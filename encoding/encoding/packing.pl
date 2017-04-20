@@ -31,15 +31,20 @@ width(B,W):- rect(B,W,_).
 height(B,H):- rect(B,_,H).
 insideTable(X,Y):- width(W), height(H), between(1,W,X), between(1,H,Y).
 
-%%%%%%  Variables: They might be useful
-% starts-B-X-Y:   box B has its left-bottom cell with upper-right coordinates (X,Y)
-%  fills-B-X-Y:   box B fills cell with upper-right coordinates (X,Y)
-
 possiblePlacements(B,I,J):-
     rect(B,SX,SY),
     height(H), width(W),
     LW is W-SX+1, LH is H-SY+1,
     between(1,LW,I), between(1,LH,J).
+    
+ocupa(B,X,Y,I,J):-
+    rect(B,SX,SY),
+    LX is X+SX-1, LY is Y+SY-1,
+    between(X,LX,I), between(Y,LY,J).
+
+%%%%%%  Variables: They might be useful
+% starts-B-X-Y:   box B has its left-bottom cell with upper-right coordinates (X,Y)
+%  fill-B-X-Y:   box B fills cell with upper-right coordinates (X,Y)
 
 writeClauses:-
     placeAll,
@@ -53,10 +58,8 @@ placeAll:-
     atLeast(1,Lits), fail.
 placeAll.
 
-ocupa(B,X,Y,I,J):-
-    rect(B,SX,SY),
-    LX is X+SX-1, LY is Y+SY-1,
-    between(X,LX,I), between(Y,LY,J).
+noRepetitions:- xCoord(X), yCoord(Y), findall(fill-B-X-Y, rect(B), Lits), atMost(1, Lits), fail.
+noRepetitions.
     
 fillAll:-
     rect(B),
@@ -74,12 +77,17 @@ fillAll:-
 %    writeClause([NEGS,NEGF]),fail.
 fillAll.
 
-noRepetitions:- xCoord(X), yCoord(Y), findall(fill-B-X-Y, rect(B), Lits), atMost(1, Lits), fail.
-noRepetitions.
-
 %%%%%%%%%%% Alternative implementation of fillAll %%%%%%%%%%
-%% It ensures there will be no fill variable set to true without its correspondent start
-%% It uses a lot more of clauses
+%% Esta implementación incluye muchas más clausulas para asegurarse que no hay variables de tipo
+%% fill sin que su correspondiente starts lo esté también.
+
+fillAllAlt:-
+    rect(B),
+    possiblePlacements(B,X,Y),
+    insideTable(I,J),
+    fillWithStartPos(B,X,Y,I,J),
+    fail.
+fillAllAlt.
 
 fillWithStartPos(B,X,Y,I,J):-
     rect(B,SX,SY),
@@ -92,14 +100,6 @@ fillWithStartPos(B,X,Y,I,J):-
     negate(starts-B-X-Y,NEGS),
     negate(fill-B-I-J,NEGF),
     writeClause([NEGS,NEGF]).
-
-fillAllAlt:-
-    rect(B),
-    possiblePlacements(B,X,Y),
-    insideTable(I,J),
-    fillWithStartPos(B,X,Y,I,J),
-    fail.
-fillAllAlt.
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%%% show the solution. Here M contains the literals that are true in the model:
@@ -119,14 +119,13 @@ displayNum(N):- N < 10, !, write('  '), write(N).
 displayNum(N):- write(' '), write(N).
 
 %%%%%% Alternative implementation of displaySol %%%%%%
-%% This implementation ensures every rectangle will be shown only once, even though the sat solver returned the same rectangle more than
-%% once, or it set to true fill variables without its correspondent start.
+%% Esta implementación se asegura que cada rectángulo se dibuja una vez, aunque en la solución del SAT solver aparezca
+%% más de una vez, incluso si hay a 1 variables de tipo fill sin que su correspondiente starts lo esté
 
 displaySolAlt(M):-
     findall(R,rect(R),RECTS),
     findall(B-X-Y, member(starts-B-X-Y,M),STARTS),
     generateResultMatrix(RECTS,STARTS,MATRIX),
-    %write(MATRIX),nl,
     displayMatrix(MATRIX).
     
 displayMatrix(MATRIX):-
@@ -197,11 +196,11 @@ numVars(N), numClauses(C),
 write('Generated '), write(C), write(' clauses over '), write(N), write(' variables. '),nl,
 shell('cat header clauses > infile.cnf',_),
 write('Calling solver....'), nl,
-shell('picosat-965/picosat -v -o model infile.cnf', Result),  % if sat: Result=10; if unsat: Result=20.
+shell('picosat -v -o model infile.cnf', Result),  % if sat: Result=10; if unsat: Result=20.
 	treatResult(Result),!.
 
 treatResult(20):- write('Unsatisfiable'), nl, halt.
-treatResult(10):- write('Solution found: '), nl, see(model), symbolicModel(M), seen, displaySolAlt(M), nl,nl,halt.
+treatResult(10):- write('Solution found: '), nl, see(model), symbolicModel(M), seen, displaySol(M), nl,nl,halt.
 
 initClauseGeneration:-  %initialize all info about variables and clauses:
 	retractall(numClauses(   _)),
