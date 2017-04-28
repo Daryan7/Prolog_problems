@@ -1,0 +1,97 @@
+c PicoSAT SAT Solver Version 960
+c Copyright (c) 2006 - 2014 Armin Biere JKU Linz
+c gcc -Wall -Wextra -DNDEBUG -O3
+c
+c using 2 as default phase
+c
+c parsing infile.cnf
+c parsed header 'p cnf 3300 22784'
+c initialized 3300 variables
+c found 22784 non trivial clauses
+c
+c random number generator seed 0
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c s   0.0   0.0  3300   0.0 13166     0     0     0   0.0   1.8 
+c 
+c initial reduction limit 1000 clauses
+c 
+c +   0.0  82.5  3300   9.9 13166   100   100  1100   5.2   1.8 
+c R   0.0  82.5  3300   9.9 13166   101   101  1100   5.2   1.8 
+c +   0.0  54.5  3300  11.3 13166   221   221  1210  10.6   1.8 
+c +   0.0  45.3  3300  11.3 13166   367   367  1331  14.2   1.9 
+c R   0.0  44.2  3300  11.3 13166   404   404  1331  15.0   1.9 
+c +   0.0  38.5  3300  11.3 13166   543   543  1464  15.8   1.9 
+c +   0.0  34.3  3300  11.3 13166   755   755  1610  17.2   2.0 
+c +   0.0  31.9  3300  11.3 13166  1011  1011  1771  16.0   2.0 
+c R   0.0  30.7  3300  11.3 13166  1205  1205  1771  18.2   2.1 
+c +   0.0  30.2  3300  11.3 13166  1320  1320  1948  17.2   2.1 
+c +   0.0  29.3  3300  11.3 13166  1693  1693  2142  16.8   2.2 
+c +   0.0  28.0  3300  11.3 13166  2144  2144  2356  18.8   2.3 
+c +   0.1  27.2  3300  11.3 13166  2689  1508  2591  16.5   2.1 
+c R   0.1  26.5  3300  11.6 13166  3215  2034  2591  16.0   2.2 
+c +   0.1  26.2  3300  11.6 13166  3348  2167  2850  15.3   2.3 
+c +   0.1  25.5  3300  11.6 13166  4145  1536  3135  15.5   2.1 
+c +   0.1  24.8  3300  11.6 13166  5109  2500  3448  16.9   2.3 
+c +   0.1  23.8  3300  11.6 13166  6275  1938  3792  15.9   2.2 
+c +   0.1  23.0  3300  11.6 13166  7685  3348  4171  18.5   2.5 
+c R   0.1  22.8  3300  11.6 13166  8030  3693  4171  18.1   2.5 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c +   0.2  22.8  3300  11.6 13166  9391  2964  4588  15.9   2.4 
+c +   0.2  22.7  3300  11.6 13166 11455  2727  5046  17.6   2.4 
+c +   0.2  22.7  3300  11.6 13166 13952  2697  5550  16.9   2.3 
+c +   0.3  22.4  3300  11.6 13166 16973  2940  6105  16.0   2.4 
+c R   0.3  21.9  3300  11.6 13166 19255  5222  6105  17.3   2.8 
+c +   0.4  21.9  3300  11.6 13166 20628  3537  6715  15.6   2.5 
+c +   0.5  21.7  3300  11.6 13166 25050  4599  7386  16.5   2.7 
+c +   0.6  21.4  3300  11.6 13166 30400  6254  8124  18.7   2.9 
+c +   0.7  21.0  3300  11.6 13166 36873  4595  8936  17.1   2.6 
+c +   0.9  20.1  3300  11.6 13166 44705  7955  9829  15.9   3.3 
+c R   0.9  20.1  3300  11.6 13166 44901  8151  9829  16.2   3.4 
+c +   1.2  20.0  3300  11.6 13166 54181  7592 10811  15.0   3.2 
+c +   1.5  19.7  3300  11.6 13166 65646  8239 11892  17.5   3.3 
+c +   2.0  19.1  3300  11.6 13166 79518 10211 13081  15.8   3.6 
+c +   2.5  18.1  3300  11.6 13166 96303  7358 14389  17.6   3.1 
+c s   2.7  17.7  3291  11.7 13121 102e3  5923 14389  14.6   2.8 
+c R   2.7  17.7  3291  11.7 13121 102e3  6026 14389  16.4   2.8 
+c R   2.7  17.7  3291  11.7 13121 102e3  6328 14389  16.5   2.9 
+c R   2.7  17.7  3291  11.7 13121 103e3  7133 14389  16.5   3.0 
+c R   2.7  17.5  3291  11.7 13121 105e3  9135 14389  15.7   3.3 
+c R   2.7  17.5  3281  11.7 13121 105e3  9349 14389  16.6   3.3 
+c R   2.7  17.5  3281  11.7 13121 105e3  9652 14389  16.4   3.4 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+c 0   2.8  17.5  3272  11.8 13121 106e3  9945 14389  15.6   3.4 
+c 
+c  seconds     variables   original    learned     agility
+c         level        used      conflicts    limit          MB
+c 
+s UNSATISFIABLE
+c
+c 2 iterations
+c 275 restarts
+c 0 failed literals
+c 106069 conflicts
+c 127884 decisions
+c 28 fixed variables
+c 2100395 learned literals
+c 22.3% deleted literals
+c 4731735 propagations
+c 143998475 visits
+c 11.8% variables used
+c 2.8 seconds in library
+c 1.7 megaprops/second
+c 52.3 megavisits/second
+c probing 0.0 seconds 0%
+c 2 simplifications
+c 22 reductions
+c 17.5 MB recycled
+c 4.1 MB maximally allocated
+c 2.8 seconds total run time

@@ -50,7 +50,7 @@ min(_,Y,Y).
 writeClauses:-
     placeAll,
     noRepetitions,
-    fillAllAlt,
+    fillAll,
     true.
     
 placeAll:-
@@ -64,8 +64,6 @@ placeAll.
 noRepetitions:- xCoord(X), yCoord(Y), findall(fill-B-X-Y, rect(B), Lits), atMost(1, Lits), fail.
 noRepetitions.
 
-%%% Se podría mejorar evitando las clausulas repetidas, es decir, las que pertenecen al cuadrado que de
-%%% dimensiones N*N donde N es el minimo de las dimensiones del rectangulo
 fillAll:-
     rect(B,SX,SY),
     possiblePlacements(SX,SY,X,Y),
@@ -78,33 +76,37 @@ fillAll:-
     writeClause([\+rotate-B,\+starts-B-X-Y,fill-B-I-J]),fail.
 fillAll.
 
-fillAllAlt:-
-    findall(B-X-Y-I-J, (rect(B,SX,SY),possiblePlacements(SX,SY,X,Y),ocupa(SX,SY,X,Y,I,J)), NoRep),
-    findall(B-X-Y-I-J, (rect(B,SX,SY),possiblePlacements(SY,SX,X,Y),ocupa(SY,SX,X,Y,I,J)), Rep),
-    intersection(NoRep,Rep,COMMON),
-    writeNoRep(NoRep,COMMON),
-    writeRep(Rep,COMMON),
-    writeCommon(COMMON).
-
-writeNoRep([],_).
-writeNoRep([B-X-Y-I-J|L],COMMON):-
-    \+member(B-X-Y-I-J,COMMON),
-    writeClause([rotate-B,\+starts-B-X-Y,fill-B-I-J]),
-    writeNoRep(L,COMMON).
-writeNoRep([_|L],C):-writeNoRep(L,C).
-
-writeRep([],_).
-writeRep([B-X-Y-I-J|L],COMMON):-
-    \+member(B-X-Y-I-J,COMMON),
-    writeClause([\+rotate-B,\+starts-B-X-Y,fill-B-I-J]),
-    writeNoRep(L,COMMON).
-writeRep([_|L],C):-writeNoRep(L,C).
-
-writeCommon([]).
-writeCommon([B-X-Y-I-J|L]):-
-    writeClause([\+starts-B-X-Y,fill-B-I-J]),
-    writeCommon(L).
-writeCommon([_|L]):-writeCommon(L).
+%fillAll:-
+%    rect(B,SX,SY),
+%    write(SX),write(' '), write(SY),nl,
+%    min(SX,SY,M),
+%   possiblePlacements(SX,SY,X,Y),
+%   possiblePlacements(SY,SX,X,Y),
+%   ocupa(M,M,X,Y,I,J),
+%    writeClause([\+starts-B-X-Y,fill-B-I-J]),fail.
+%fillAll:-
+%    rect(B),
+%    writeRest(B),fail.
+%fillAll.
+    
+%writeRest(B):-
+%    rect(B,SX,SY),
+%    min(SX,SY,SX),
+%    possiblePlacements(SX,SY,X,Y),
+%    Y1 is Y+SX,
+%    SY1 is SX-SY,
+%    ocupa(SX,SY1,X,Y1,I,J),
+%    writeClause([rotate-B,\+starts-B-X-Y,fill-B-I-J]),fail.
+%writeRest(B):-
+%    rect(B,W,H),
+%    min(SY,SX,SY),
+%    SX is H,
+%    SY is W,
+%    possiblePlacements(SX,SY,X,Y),
+%    X1 is X+SY,
+%    SX1 is SY-SX,
+%    ocupa(SX1,SY,X1,Y,I,J),
+%    writeClause([\+rotate-B,\+starts-B-X-Y,fill-B-I-J]),fail.
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%%% show the solution. Here M contains the literals that are true in the model:
@@ -122,6 +124,42 @@ displayPartialSol(_,_,_):-write('  x').
 
 displayNum(N):- N < 10, !, write('  '), write(N).
 displayNum(N):- write(' '), write(N).
+
+%%%%%% Alternative implementation of displaySol %%%%%%
+%% Esta implementacion se asegura que cada rectangulo se dibuja una vez, aunque en la solucion del SAT solver aparezca
+%% mas de una vez, incluso si hay a 1 variables de tipo fill sin que su correspondiente starts lo este
+
+displaySolAlt(M):-
+    findall(R,rect(R),RECTS),
+    findall(B-X-Y, member(starts-B-X-Y,M),STARTS),
+    generateResultMatrix(RECTS,STARTS,MATRIX),
+    displayMatrix(MATRIX).
+    
+displayMatrix(MATRIX):-
+    yCoord(Y), xCoord(X),
+    displayPartialMatrix(X,Y,MATRIX),
+    width(X),nl,fail.
+displayMatrix(_).
+
+displayPartialMatrix(X,Y,MATRIX):-
+    nth1(Y,MATRIX,ROW),
+    nth1(X,ROW,ELEM),
+    integer(ELEM),
+    displayNum(ELEM),!.
+displayPartialMatrix(_,_,_):-write('  x').
+
+fillRectInMatrix([],_).
+fillRectInMatrix([R-X-Y|L],MATRIX):-
+    nth1(Y,MATRIX,ROW),
+    nth1(X,ROW,R),
+    fillRectInMatrix(L,MATRIX).
+    
+generateResultMatrix([],_,_).
+generateResultMatrix([R|L],M,MATRIX):-
+    member(R-X-Y, M),
+    findall(R-I-J,ocupa(R,X,Y,I,J), COORDS),
+    fillRectInMatrix(COORDS,MATRIX),
+    generateResultMatrix(L,M,MATRIX).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
